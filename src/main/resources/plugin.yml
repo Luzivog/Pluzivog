@@ -1,0 +1,8 @@
+name: Pluzivog
+version: '${project.version}'
+main: pluzivog.pluzivog.Pluzivog
+api-version: 1.19
+commands:
+  shop:
+    description: Opens the shop for the command sender.
+    usage: /shop
