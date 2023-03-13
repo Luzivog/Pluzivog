@@ -1,6 +1,7 @@
 package pluzivog.pluzivog.commands;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -19,16 +20,17 @@ import pluzivog.pluzivog.shopItems.ShopItem;
 
 
 import java.util.HashMap;
-import java.util.Map;
 
 public class Shop implements Listener, CommandExecutor {
 
-    private String invName = "Shop";
+    private static String invName = "Shop";
+    private static ItemStack background = new ItemStack(Material.YELLOW_STAINED_GLASS_PANE);
+
+    private static int size = 27;
+
     private HashMap<Integer, ShopItem> items = new HashMap<>();
 
-    private ItemStack background = new ItemStack(Material.YELLOW_STAINED_GLASS_PANE);
-
-    private int size = 27;
+    private Inventory inventory;
 
 
     public Shop(Pluzivog plugin) {
@@ -42,7 +44,7 @@ public class Shop implements Listener, CommandExecutor {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!event.getView().getTitle().equals(invName)) return;
+        if (!event.getClickedInventory().equals(this.inventory)) return;
 
         event.setCancelled(true);
 
@@ -56,6 +58,12 @@ public class Shop implements Listener, CommandExecutor {
         int price = shopItem.getPrice();
 
         if (player.getInventory().contains(Material.DIAMOND, price)) {
+
+            if (player.getInventory().firstEmpty() < 0){
+                player.sendMessage(ChatColor.translateAlternateColorCodes('&', "&4Erreur : Inventaire plein"));
+                return;
+            }
+
             player.getInventory().removeItem(new ItemStack(Material.DIAMOND, price));
             player.getInventory().addItem(shopItem.getItem());
         }
@@ -70,18 +78,20 @@ public class Shop implements Listener, CommandExecutor {
 
         Player player = (Player) sender;
 
-        Inventory inv = Bukkit.createInventory(player, size, this.invName);
+        Inventory inv = Bukkit.createInventory(player, Shop.size, Shop.invName);
 
         for (int key : this.items.keySet()) {
             ShopItem shopItem = this.items.get(key);
             inv.setItem(key, shopItem.getShopItem());
         }
 
-        for (int i = 0; i<size; i++)
+        for (int i = 0; i<Shop.size; i++)
             if (inv.getItem(i) == null)
-                inv.setItem(i, background);
+                inv.setItem(i, Shop.background);
 
-        player.openInventory(inv);
+        this.inventory = inv;
+
+        player.openInventory(this.inventory);
 
         return true;
     }

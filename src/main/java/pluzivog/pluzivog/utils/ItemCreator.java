@@ -1,14 +1,19 @@
 package pluzivog.pluzivog.utils;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionEffectType;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ItemCreator {
 
@@ -19,27 +24,15 @@ public class ItemCreator {
     }
 
     public ItemCreator(ItemCreator itemCreator) {
-        this.itemStack = new ItemStack(itemCreator.getItemStack().getType());
+        this.itemStack = itemCreator.itemStack.clone();
+    }
 
-        this.setName(itemCreator.getName());
-        this.setLore(itemCreator.getLore());
-
-        Map<Enchantment, Integer> enchantments = itemCreator.getItemStack().getEnchantments();
-
-        if (enchantments != null) {
-            for (Enchantment ench : enchantments.keySet()) {
-                this.addEnchant(ench, enchantments.get(ench));
-            }
-        }
+    public ItemCreator(ItemStack itemStack) {
+        this.itemStack = itemStack.clone();
     }
 
     public ItemStack getItemStack() {
         return this.itemStack;
-    }
-
-    public String getName() {
-        ItemMeta meta = this.getItemStack().getItemMeta();
-        return meta.getDisplayName();
     }
 
     public void setName(String name) {
@@ -61,13 +54,6 @@ public class ItemCreator {
         this.getItemStack().setItemMeta(meta);
     }
 
-    public void setLore(List<String> lores) {
-        if (lores == null) return;
-        this.clearLore();
-        for (String lore : lores) {
-            addLore(lore);
-        }
-    }
     public void setLore(String ... lores) {
         if (lores == null) return;
         this.clearLore();
@@ -96,4 +82,18 @@ public class ItemCreator {
     public void addEnchant(Enchantment enchant, int level) {
         this.getItemStack().addUnsafeEnchantment(enchant, level);
     }
+
+    public void addAttribute (Attribute attribute, String name, double amount, AttributeModifier.Operation operation, EquipmentSlot eqpmSlot) {
+        ItemMeta meta = this.getItemStack().getItemMeta();
+        meta.addAttributeModifier(attribute, new AttributeModifier(UUID.randomUUID(), name, amount, operation, eqpmSlot));
+        this.getItemStack().setItemMeta(meta);
+    }
+
+    public void addPotionEffectType (PotionEffectType potionEffectType, int amplifier) {
+        if (potionEffectType == null) return;
+        ItemMeta meta = this.getItemStack().getItemMeta();
+        meta.getPersistentDataContainer().set(potionEffectType.getKey(), PersistentDataType.INTEGER, amplifier);
+        this.getItemStack().setItemMeta(meta);
+    }
+
 }
